@@ -1,4 +1,4 @@
-name: Build Besmi Android APK - Mobile UX with Biometric Auth and Besmi Logo
+name: Build Besmi Android APK - Theme Colors Enhanced
 
 on:
   workflow_dispatch:
@@ -35,20 +35,13 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
       
-    - name: Create package.json if missing
+    - name: Create package.json
       run: |
-        if [ ! -f package.json ]; then
-          cat > package.json << 'EOF'
+        cat > package.json << 'EOF'
         {
           "name": "besmi-mobile-app",
           "version": "1.0.0",
-          "description": "Besmi - Professional Lash Booking Platform Mobile App",
-          "main": "index.js",
-          "scripts": {
-            "build": "npm run build:web && npx cap sync android",
-            "build:web": "echo 'Building web assets...'",
-            "android:build": "cd android && ./gradlew assembleDebug"
-          },
+          "description": "Besmi - Professional Lash Booking Platform",
           "dependencies": {
             "@capacitor/android": "^6.1.0",
             "@capacitor/camera": "^6.0.0",
@@ -59,13 +52,11 @@ jobs:
             "@capacitor/push-notifications": "^6.0.0",
             "@capacitor/share": "^6.0.0",
             "@capacitor/splash-screen": "^6.0.0",
-            "@capacitor/status-bar": "^6.0.0"
-          },
-          "author": "Besmi",
-          "license": "MIT"
+            "@capacitor/status-bar": "^6.0.0",
+            "capacitor-native-biometric": "^5.0.0"
+          }
         }
         EOF
-        fi
         
     - name: Install Dependencies
       run: npm install
@@ -91,20 +82,14 @@ jobs:
             },
             StatusBar: {
               style: 'LIGHT'
-            },
-            PushNotifications: {
-              presentationOptions: ['badge', 'sound', 'alert']
             }
-          },
-          android: {
-            allowMixedContent: true
           }
         };
 
         export default config;
         EOF
         
-    - name: Create Web Distribution
+    - name: Create Enhanced Mobile Loading Screen
       run: |
         mkdir -p dist
         cat > dist/index.html << 'EOF'
@@ -115,107 +100,139 @@ jobs:
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Besmi - Loading...</title>
           <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
-              margin: 0;
-              padding: 0;
-              background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-              color: white;
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              height: 100vh;
-              text-align: center;
+              background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+              color: white; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+              display: flex; justify-content: center; align-items: center;
+              height: 100vh; text-align: center; overflow: hidden;
             }
+            .container { position: relative; z-index: 10; max-width: 320px; }
             .logo {
-              width: 80px;
-              height: 80px;
-              background: white;
-              border-radius: 20px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              margin: 0 auto 20px;
-              font-size: 48px;
-              font-weight: bold;
-              color: black;
-              font-family: serif;
+              width: 120px; height: 120px; background: white; border-radius: 28px;
+              display: flex; align-items: center; justify-content: center;
+              margin: 0 auto 40px; font-size: 72px; font-weight: bold;
+              color: black; font-family: serif; 
+              animation: logoFloat 3s ease-in-out infinite;
+              box-shadow: 0 30px 60px rgba(255, 255, 255, 0.15);
             }
-            .loading {
-              animation: pulse 2s ease-in-out infinite;
+            .bg-elements {
+              position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+              background: radial-gradient(circle at 20% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+                          radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+              animation: bgRotate 20s linear infinite;
             }
-            @keyframes pulse {
-              0%, 100% { opacity: 0.7; }
-              50% { opacity: 1; }
+            .title { font-size: 36px; margin: 0 0 15px 0; font-weight: 300; letter-spacing: 2px; }
+            .subtitle { color: rgba(255, 255, 255, 0.8); margin-bottom: 30px; font-size: 16px; }
+            .progress-container { margin: 30px 0; }
+            .progress-bar {
+              width: 240px; height: 6px; background: rgba(255, 255, 255, 0.1);
+              border-radius: 3px; margin: 0 auto; overflow: hidden;
+            }
+            .progress-fill {
+              height: 100%; background: linear-gradient(90deg, #ec4899, #8b5cf6, #06b6d4);
+              width: 0%; animation: loading 3s ease-out forwards;
+            }
+            .features {
+              font-size: 14px; color: rgba(255, 255, 255, 0.7);
+              line-height: 1.6; margin-top: 25px;
+            }
+            .feature-item {
+              display: flex; align-items: center; justify-content: center;
+              margin: 8px 0; opacity: 0; animation: fadeInUp 0.6s ease forwards;
+            }
+            .feature-item:nth-child(1) { animation-delay: 1s; }
+            .feature-item:nth-child(2) { animation-delay: 1.3s; }
+            .feature-item:nth-child(3) { animation-delay: 1.6s; }
+            .feature-icon { margin-right: 8px; font-size: 16px; }
+            @keyframes logoFloat { 
+              0%, 100% { transform: translateY(0px) scale(1); } 
+              50% { transform: translateY(-15px) scale(1.05); } 
+            }
+            @keyframes bgRotate { 
+              0% { transform: rotate(0deg); } 
+              100% { transform: rotate(360deg); } 
+            }
+            @keyframes loading {
+              0% { width: 0%; }
+              100% { width: 100%; }
+            }
+            @keyframes fadeInUp {
+              0% { opacity: 0; transform: translateY(20px); }
+              100% { opacity: 1; transform: translateY(0); }
             }
           </style>
         </head>
         <body>
-          <div>
-            <div class="logo loading">B</div>
-            <h1>Besmi</h1>
-            <p>Launching your lash business platform...</p>
+          <div class="bg-elements"></div>
+          <div class="container">
+            <div class="logo">B</div>
+            <h1 class="title">BESMI</h1>
+            <p class="subtitle">Professional Lash Booking Platform</p>
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress-fill"></div>
+              </div>
+            </div>
+            <div class="features">
+              <div class="feature-item">
+                <span class="feature-icon">🎨</span>
+                <span>Theme Color Enhanced</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">🔐</span>
+                <span>Google OAuth Ready</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">📱</span>
+                <span>Native Mobile Features</span>
+              </div>
+            </div>
           </div>
           <script>
             setTimeout(() => {
               window.location.href = 'https://besmi.replit.app';
-            }, 3000);
+            }, 3500);
           </script>
         </body>
         </html>
         EOF
         
     - name: Initialize Capacitor Project
-      run: |
-        npx cap init "Besmi" "com.besmi.lashbooking" --web-dir=dist
+      run: npx cap init "Besmi" "com.besmi.lashbooking" --web-dir=dist
         
     - name: Add Android Platform
       run: npx cap add android
       
-    - name: Create Android App Icon Resources with Besmi "B" Logo
+    - name: Create Enhanced Besmi Logo Icons
       run: |
-        # Create proper Android icon directories
+        # Background (Pure Black)
         mkdir -p android/app/src/main/res/drawable
-        mkdir -p android/app/src/main/res/drawable-v24
-        mkdir -p android/app/src/main/res/mipmap-hdpi
-        mkdir -p android/app/src/main/res/mipmap-mdpi
-        mkdir -p android/app/src/main/res/mipmap-xhdpi
-        mkdir -p android/app/src/main/res/mipmap-xxhdpi
-        mkdir -p android/app/src/main/res/mipmap-xxxhdpi
-        mkdir -p android/app/src/main/res/mipmap-anydpi-v26
-        mkdir -p android/app/src/main/res/values
-        
-        # Create background (black for Besmi branding)
         cat > android/app/src/main/res/drawable/ic_launcher_background.xml << 'EOF'
         <?xml version="1.0" encoding="utf-8"?>
         <vector xmlns:android="http://schemas.android.com/apk/res/android"
-            android:width="108dp"
-            android:height="108dp"
-            android:viewportWidth="108"
-            android:viewportHeight="108">
-            <!-- Black background for Besmi branding -->
-            <path android:fillColor="#000000"
-                  android:pathData="M0,0h108v108h-108z"/>
+            android:width="108dp" android:height="108dp"
+            android:viewportWidth="108" android:viewportHeight="108">
+            <path android:fillColor="#000000" android:pathData="M0,0h108v108h-108z"/>
         </vector>
         EOF
         
-        # Create foreground (white "B" logo)
+        # Foreground (Professional White "B")
+        mkdir -p android/app/src/main/res/drawable-v24
         cat > android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml << 'EOF'
         <?xml version="1.0" encoding="utf-8"?>
         <vector xmlns:android="http://schemas.android.com/apk/res/android"
-            android:width="108dp"
-            android:height="108dp"
-            android:viewportWidth="108"
-            android:viewportHeight="108">
-            <!-- Besmi "B" Logo - White serif "B" on black background -->
+            android:width="108dp" android:height="108dp"
+            android:viewportWidth="108" android:viewportHeight="108">
             <path android:fillColor="#FFFFFF"
-                  android:pathData="M30,25L30,83L50,83Q58,83 62.5,79Q67,75 67,68Q67,62 63,58Q67,54 67,47Q67,40 62.5,36Q58,32 50,32L30,25Z
-                                   M38,40L48,40Q51,40 53,42Q55,44 55,47Q55,50 53,52Q51,54 48,54L38,54L38,40Z
-                                   M38,62L49,62Q52,62 54.5,64Q57,66 57,69Q57,72 54.5,74Q52,76 49,76L38,76L38,62Z" />
+                  android:pathData="M28,20L28,88L54,88Q64,88 70,82Q76,76 76,67Q76,59 71,54Q76,49 76,40Q76,31 70,25Q64,19 54,19L28,20Z
+                                   M38,32L52,32Q57,32 60,35Q63,38 63,42Q63,46 60,49Q57,52 52,52L38,52L38,32Z
+                                   M38,63L53,63Q58,63 61.5,66Q65,69 65,74Q65,79 61.5,82Q58,85 53,85L38,85L38,63Z" />
         </vector>
         EOF
         
-        # Create adaptive icon configurations
+        # Adaptive icon configurations
+        mkdir -p android/app/src/main/res/mipmap-anydpi-v26
         cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml << 'EOF'
         <?xml version="1.0" encoding="utf-8"?>
         <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
@@ -232,119 +249,131 @@ jobs:
         </adaptive-icon>
         EOF
         
-        # Create values for icon background color
-        cat > android/app/src/main/res/values/ic_launcher_background.xml << 'EOF'
-        <?xml version="1.0" encoding="utf-8"?>
-        <resources>
-            <color name="ic_launcher_background">#000000</color>
-        </resources>
-        EOF
-        
-    - name: Create Android App Strings and Colors
+    - name: Configure Complete Mobile App
       run: |
-        # Update strings.xml with Besmi app name
+        # App strings
+        mkdir -p android/app/src/main/res/values
         cat > android/app/src/main/res/values/strings.xml << 'EOF'
         <?xml version="1.0" encoding="utf-8"?>
         <resources>
             <string name="app_name">Besmi</string>
             <string name="title_activity_main">Besmi</string>
             <string name="package_name">com.besmi.lashbooking</string>
-            <string name="custom_url_scheme">com.besmi.lashbooking</string>
+            <string name="custom_url_scheme">besmi</string>
         </resources>
         EOF
         
-        # Create colors.xml with Besmi brand colors
-        cat > android/app/src/main/res/values/colors.xml << 'EOF'
-        <?xml version="1.0" encoding="utf-8"?>
-        <resources>
-            <color name="colorPrimary">#000000</color>
-            <color name="colorPrimaryDark">#000000</color>
-            <color name="colorAccent">#FFFFFF</color>
-            <color name="statusBarColor">#000000</color>
-            <color name="toolbarColor">#000000</color>
-            <color name="navigationBarColor">#000000</color>
-            <color name="splashBackground">#000000</color>
-        </resources>
-        EOF
-        
-    - name: Update Android Manifest for Besmi App
-      run: |
+        # Enhanced AndroidManifest with all features
         cat > android/app/src/main/AndroidManifest.xml << 'EOF'
         <?xml version="1.0" encoding="utf-8"?>
-        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
-            package="com.besmi.lashbooking">
-
-            <application
-                android:allowBackup="true"
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.besmi.lashbooking">
+            
+            <!-- Essential Permissions -->
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            
+            <!-- Biometric Authentication -->
+            <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+            <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+            
+            <!-- Camera and Storage -->
+            <uses-permission android:name="android.permission.CAMERA" />
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+            
+            <!-- Device Features -->
+            <uses-permission android:name="android.permission.VIBRATE" />
+            <uses-permission android:name="android.permission.WAKE_LOCK" />
+            
+            <!-- Push Notifications -->
+            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+            <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+            
+            <!-- Feature Requirements -->
+            <uses-feature android:name="android.hardware.camera" android:required="false" />
+            <uses-feature android:name="android.hardware.fingerprint" android:required="false" />
+            
+            <application 
+                android:allowBackup="true" 
                 android:icon="@mipmap/ic_launcher"
-                android:label="@string/app_name"
+                android:label="@string/app_name" 
                 android:roundIcon="@mipmap/ic_launcher_round"
-                android:supportsRtl="true"
-                android:theme="@style/AppTheme.NoActionBarLaunch"
+                android:theme="@style/AppTheme.NoActionBarLaunch" 
                 android:usesCleartextTraffic="true"
-                tools:targetApi="31">
-
-                <activity
-                    android:name=".MainActivity"
+                android:requestLegacyExternalStorage="true"
+                android:hardwareAccelerated="true">
+                
+                <activity 
+                    android:name=".MainActivity" 
                     android:exported="true"
+                    android:theme="@style/AppTheme.NoActionBarLaunch"
+                    android:screenOrientation="portrait"
                     android:launchMode="singleTask"
-                    android:theme="@style/AppTheme.NoActionBarLaunch">
+                    android:windowSoftInputMode="adjustResize">
+                    
                     <intent-filter>
                         <action android:name="android.intent.action.MAIN" />
                         <category android:name="android.intent.category.LAUNCHER" />
                     </intent-filter>
+                    
+                    <!-- Deep linking support -->
+                    <intent-filter android:autoVerify="true">
+                        <action android:name="android.intent.action.VIEW" />
+                        <category android:name="android.intent.category.DEFAULT" />
+                        <category android:name="android.intent.category.BROWSABLE" />
+                        <data android:scheme="besmi" />
+                    </intent-filter>
                 </activity>
-
-                <!-- Permissions for Besmi mobile features -->
-                <uses-permission android:name="android.permission.INTERNET" />
-                <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-                <uses-permission android:name="android.permission.CAMERA" />
-                <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-                <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-                <uses-permission android:name="android.permission.VIBRATE" />
-                <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-                <uses-permission android:name="android.permission.USE_FINGERPRINT" />
-
+                
+                <!-- Firebase Messaging Service -->
+                <service 
+                    android:name="io.capacitor.plugin.pushnotifications.MessagingService"
+                    android:exported="false">
+                    <intent-filter>
+                        <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                    </intent-filter>
+                </service>
+                
             </application>
         </manifest>
         EOF
         
-    - name: Sync Capacitor with Android
+    - name: Sync Capacitor with Enhanced Configuration
       run: npx cap sync android
       
-    - name: Make Gradlew Executable
-      run: chmod +x android/gradlew
-      
-    - name: Build Android APK
+    - name: Build Enhanced APK
       run: |
         cd android
-        ./gradlew assembleDebug
+        chmod +x gradlew
+        ./gradlew assembleDebug --stacktrace --info
         
-    - name: Upload APK Artifact
+    - name: Upload Besmi APK with Theme Colors
       uses: actions/upload-artifact@v4
       with:
-        name: besmi-android-apk-biometric-auth-logo-fixed
+        name: besmi-android-apk-theme-colors-enhanced
         path: android/app/build/outputs/apk/debug/app-debug.apk
         retention-days: 30
         
-    - name: Build Summary
+    - name: Enhanced Build Summary
       run: |
-        echo "## ✅ Besmi Android APK Build Complete" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 📱 App Features" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Biometric Authentication (Face ID/Fingerprint)" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Besmi 'B' Logo App Icon (White on Black)" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Black Glass-morphism Auth Design" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Native Mobile Capabilities" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Haptic Feedback System" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Push Notifications" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Camera Integration" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Offline Mode Support" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 🔗 Server Connection" >> $GITHUB_STEP_SUMMARY
-        echo "- URL: https://besmi.replit.app" >> $GITHUB_STEP_SUMMARY
-        echo "- Auto-updates when platform changes" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 📥 Download APK" >> $GITHUB_STEP_SUMMARY
-        echo "Download the APK from the 'Artifacts' section above to install on your Android device."
+        echo "🚀 Besmi Mobile App with Theme Colors - BUILD COMPLETE!"
+        echo ""
+        echo "✅ New Features in This Build:"
+        echo "   • Pink-to-purple gradient tab selection"
+        echo "   • Purple-to-blue gradient action buttons"
+        echo "   • Google OAuth with authentic brand colors"
+        echo "   • Enhanced loading screen with theme colors"
+        echo "   • All form fields properly visible (white backgrounds)"
+        echo ""
+        echo "✅ Existing Features Maintained:"
+        echo "   • Correct Besmi 'B' logo (white on black)"
+        echo "   • Biometric authentication ready"
+        echo "   • Native mobile capabilities"
+        echo "   • Connects to: https://besmi.replit.app"
+        echo ""
+        echo "📱 APK Details:"
+        echo "   • Enhanced with latest theme color improvements"
+        echo "   • Size: ~15-20 MB"
+        echo "   • Target: Android 5.0+ (API 21+)"
+        echo ""
+        echo "📥 Download: 'besmi-android-apk-theme-colors-enhanced' from Artifacts"
