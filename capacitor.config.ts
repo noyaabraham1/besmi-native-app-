@@ -1,6 +1,3 @@
-### 3. capacitor.config.ts
-
-```typescript
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
@@ -32,6 +29,8 @@ const config: CapacitorConfig = {
     }
   }
 };
+
+export default config;
 
 export default config;
 ```
