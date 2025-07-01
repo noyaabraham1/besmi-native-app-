@@ -200,12 +200,11 @@ jobs:
         # Update app name
         sed -i 's/android:label=".*"/android:label="Besmi"/' android/app/src/main/AndroidManifest.xml
         
-        # Create launcher background (black)
+        # Create basic colors (without ic_launcher_background to avoid conflict)
         mkdir -p android/app/src/main/res/values
         cat > android/app/src/main/res/values/colors.xml << 'EOF'
         <?xml version="1.0" encoding="utf-8"?>
         <resources>
-            <color name="ic_launcher_background">#000000</color>
             <color name="colorPrimary">#000000</color>
             <color name="colorPrimaryDark">#000000</color>
             <color name="statusBarColor">#000000</color>
