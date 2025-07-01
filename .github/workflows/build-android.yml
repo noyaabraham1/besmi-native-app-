@@ -1,8 +1,6 @@
 name: Build Besmi Native Android App
-
 on:
   workflow_dispatch:
-
 jobs:
   build-android:
     runs-on: ubuntu-latest
@@ -30,6 +28,9 @@ jobs:
         npm install
         npm install -g @capacitor/cli
         npm install -D typescript
+    
+    - name: Initialize Capacitor
+      run: npx cap init "Besmi" "com.besmi.lashbooking" --web-dir="."
     
     - name: Add Android Platform
       run: npx cap add android
