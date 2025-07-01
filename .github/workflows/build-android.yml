@@ -49,6 +49,9 @@ jobs:
             "@capacitor/splash-screen": "^6.0.0",
             "@capacitor/status-bar": "^6.0.0",
             "capacitor-native-biometric": "^4.2.2"
+          },
+          "devDependencies": {
+            "typescript": "^5.0.0"
           }
         }
         EOF
