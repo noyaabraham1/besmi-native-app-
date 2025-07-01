@@ -1,4 +1,4 @@
-nname: Build Besmi Native Android App
+name: Build Besmi Native Android App
 
 on:
   workflow_dispatch:
