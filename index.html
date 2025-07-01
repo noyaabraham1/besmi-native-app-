@@ -1,6 +1,3 @@
-### 2. index.html (Root Level)
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -246,7 +243,6 @@
       <div class="dot"></div>
     </div>
   </div>
-
   <!-- Authentication Screen -->
   <div id="authScreen" class="auth-container">
     <div class="auth-header">
@@ -256,7 +252,6 @@
       <div class="auth-title">Welcome to Besmi</div>
       <div class="auth-subtitle">Sign in to your lash artist platform</div>
     </div>
-
     <form id="authForm" class="auth-form">
       <div id="errorMessage" class="error-message hide"></div>
       
@@ -270,7 +265,6 @@
           required
         />
       </div>
-
       <div class="form-group">
         <label class="form-label" for="password">Password</label>
         <input 
@@ -281,18 +275,15 @@
           required
         />
       </div>
-
       <button type="submit" id="submitButton" class="auth-button">
         Sign In
       </button>
-
       <div class="auth-toggle">
         <span id="toggleText">Don't have an account?</span>
         <button type="button" id="toggleMode">Sign Up</button>
       </div>
     </form>
   </div>
-
   <script>
     let isSignUp = false;
     
@@ -301,7 +292,6 @@
       document.getElementById('loadingScreen').classList.add('hide');
       document.getElementById('authScreen').classList.add('show');
     }, 3000);
-
     // Toggle between sign in/sign up
     document.getElementById('toggleMode').addEventListener('click', () => {
       isSignUp = !isSignUp;
@@ -319,7 +309,6 @@
         toggleMode.textContent = 'Sign Up';
       }
     });
-
     // Handle form submission
     document.getElementById('authForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -344,7 +333,6 @@
           credentials: 'include',
           body: JSON.stringify({ email, password }),
         });
-
         if (response.ok) {
           // Success - redirect to main platform
           window.location.href = 'https://besmi.com/dashboard';
@@ -359,7 +347,6 @@
         submitButton.textContent = isSignUp ? 'Create Account' : 'Sign In';
       }
     });
-
     // Auto-focus email field when auth screen appears
     setTimeout(() => {
       document.getElementById('email').focus();
