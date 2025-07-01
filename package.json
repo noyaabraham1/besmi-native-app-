@@ -1,6 +1,4 @@
-### 1. package.json (Root Level)
 
-```json
 {
   "name": "besmi-mobile-app",
   "version": "1.0.0",
@@ -29,4 +27,4 @@
   "author": "Besmi",
   "license": "MIT"
 }
-```
+
