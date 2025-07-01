@@ -13,9 +13,9 @@
     
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
       color: white;
-      overflow: hidden;
     }
     
     .loading-container {
@@ -23,9 +23,18 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
       text-align: center;
-      animation: fadeIn 1s ease-in;
+      padding: 20px;
+    }
+    
+    .auth-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
     }
     
     .logo {
@@ -36,8 +45,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 40px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      margin-bottom: 24px;
       animation: logoScale 2s ease-in-out infinite alternate;
     }
     
@@ -50,18 +58,18 @@
     
     .brand-name {
       font-size: 32px;
-      font-weight: 600;
-      margin-bottom: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
       letter-spacing: 2px;
     }
     
     .tagline {
       font-size: 18px;
-      opacity: 0.8;
-      max-width: 320px;
-      line-height: 1.4;
-      margin-bottom: 60px;
+      opacity: 0.9;
+      margin-bottom: 40px;
       text-align: center;
+      line-height: 1.4;
+      max-width: 300px;
     }
     
     .loading-dots {
@@ -74,25 +82,21 @@
       height: 12px;
       border-radius: 50%;
       background: white;
-      animation: dotPulse 1.5s ease-in-out infinite;
+      animation: dotPulse 1.4s ease-in-out infinite both;
     }
     
-    .dot:nth-child(2) { animation-delay: 0.2s; }
-    .dot:nth-child(3) { animation-delay: 0.4s; }
-    
-    .auth-container {
-      display: none;
-      padding: 40px 20px;
-      max-width: 400px;
-      margin: 0 auto;
-      height: 100vh;
-      flex-direction: column;
-      justify-content: center;
-    }
+    .dot:nth-child(1) { animation-delay: -0.32s; }
+    .dot:nth-child(2) { animation-delay: -0.16s; }
     
     .auth-header {
       text-align: center;
       margin-bottom: 40px;
+    }
+    
+    .auth-form {
+      width: 100%;
+      max-width: 400px;
+      padding: 0 20px;
     }
     
     .auth-logo {
@@ -160,49 +164,52 @@
     .auth-button {
       width: 100%;
       padding: 16px;
+      background: linear-gradient(45deg, #ff69b4, #ff1493);
+      color: white;
       border: none;
       border-radius: 12px;
-      background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
-      color: white;
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      margin-bottom: 16px;
-      transition: transform 0.2s ease;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
     }
     
     .auth-button:hover {
       transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255,105,180,0.3);
     }
     
     .auth-button:disabled {
-      opacity: 0.5;
+      opacity: 0.7;
       cursor: not-allowed;
       transform: none;
     }
     
     .auth-toggle {
       text-align: center;
-      margin-top: 20px;
+      font-size: 14px;
     }
     
     .auth-toggle button {
       background: none;
       border: none;
       color: #ff69b4;
-      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
-      text-decoration: underline;
+      margin-left: 8px;
     }
     
     .error-message {
-      background: rgba(255,0,0,0.1);
-      border: 1px solid rgba(255,0,0,0.3);
-      color: #ff6b6b;
+      background: rgba(255,59,48,0.1);
+      border: 1px solid rgba(255,59,48,0.3);
+      color: #ff3b30;
       padding: 12px;
       border-radius: 8px;
       margin-bottom: 20px;
       font-size: 14px;
+      text-align: center;
+      backdrop-filter: blur(10px);
     }
     
     @keyframes fadeIn {
@@ -309,7 +316,7 @@
         toggleMode.textContent = 'Sign Up';
       }
     });
-    // Handle form submission
+    // Handle form submission with multiple endpoint attempts
     document.getElementById('authForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -321,31 +328,46 @@
       // Reset error state
       errorMessage.classList.add('hide');
       submitButton.disabled = true;
-      submitButton.textContent = 'Signing in...';
+      submitButton.textContent = 'Connecting...';
       
-      try {
-        const endpoint = isSignUp ? '/api/auth/signup' : '/api/auth/signin';
-        const response = await fetch(`https://besmi.com${endpoint}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({ email, password }),
-        });
-        if (response.ok) {
-          // Success - redirect to main platform
-          window.location.href = 'https://besmi.com/dashboard';
-        } else {
-          const error = await response.json();
-          throw new Error(error.message || 'Authentication failed');
+      const endpoints = [
+        'https://besmi.com',
+        'https://besmi.replit.app'
+      ];
+      
+      for (const baseUrl of endpoints) {
+        try {
+          const authEndpoint = isSignUp ? '/api/auth/signup' : '/api/auth/signin';
+          const response = await fetch(`${baseUrl}${authEndpoint}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ email, password }),
+          });
+          if (response.ok) {
+            // Success - redirect to main platform
+            submitButton.textContent = 'Success! Redirecting...';
+            setTimeout(() => {
+              window.location.href = `${baseUrl}/dashboard`;
+            }, 1000);
+            return;
+          } else {
+            const error = await response.json();
+            throw new Error(error.message || 'Authentication failed');
+          }
+        } catch (error) {
+          console.log(`Failed to connect to ${baseUrl}:`, error.message);
+          // Continue to next endpoint
         }
-      } catch (error) {
-        errorMessage.textContent = error.message;
-        errorMessage.classList.remove('hide');
-        submitButton.disabled = false;
-        submitButton.textContent = isSignUp ? 'Create Account' : 'Sign In';
       }
+      
+      // If all endpoints failed
+      errorMessage.textContent = 'Unable to connect to Besmi servers. Please check your internet connection and try again.';
+      errorMessage.classList.remove('hide');
+      submitButton.disabled = false;
+      submitButton.textContent = isSignUp ? 'Create Account' : 'Sign In';
     });
     // Auto-focus email field when auth screen appears
     setTimeout(() => {
