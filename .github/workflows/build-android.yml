@@ -211,20 +211,50 @@ jobs:
         </resources>
         EOF
         
-        # Remove any existing problematic icons and create clean launcher foreground
+        # Remove any existing problematic icons
         rm -f android/app/src/main/res/drawable/ic_launcher_foreground.xml
         rm -f android/app/src/main/res/mipmap-*/ic_launcher_foreground.png
-        mkdir -p android/app/src/main/res/drawable
-        cat > android/app/src/main/res/drawable/ic_launcher_foreground.xml << 'EOF'
-        <vector xmlns:android="http://schemas.android.com/apk/res/android"
-            android:width="108dp"
-            android:height="108dp"
-            android:viewportWidth="108"
-            android:viewportHeight="108">
-            <path
-                android:fillColor="#FFFFFF"
-                android:pathData="M30,20 L30,80 L50,80 Q60,80 65,75 Q70,70 70,60 Q70,55 67,52 Q65,50 62,50 Q65,48 67,45 Q70,40 70,35 Q70,25 65,20 Q60,15 50,15 L30,20 Z M40,25 L50,25 Q55,25 57,27 Q60,30 60,35 Q60,40 57,42 Q55,45 50,45 L40,45 L40,25 Z M40,55 L50,55 Q55,55 57,57 Q60,60 60,65 Q60,70 57,72 Q55,75 50,75 L40,75 L40,55 Z" />
-        </vector>
+        rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+        rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+        
+        # Create all required mipmap directories and PNG icons instead of vector
+        mkdir -p android/app/src/main/res/mipmap-hdpi
+        mkdir -p android/app/src/main/res/mipmap-mdpi  
+        mkdir -p android/app/src/main/res/mipmap-xhdpi
+        mkdir -p android/app/src/main/res/mipmap-xxhdpi
+        mkdir -p android/app/src/main/res/mipmap-xxxhdpi
+        mkdir -p android/app/src/main/res/mipmap-anydpi-v26
+        
+        # Create simple black background PNG files for all densities
+        # Using base64 encoded 1x1 black pixel PNG
+        echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAGBaEO0HQAAAABJRU5ErkJggg==" | base64 -d > android/app/src/main/res/mipmap-mdpi/ic_launcher_background.png
+        cp android/app/src/main/res/mipmap-mdpi/ic_launcher_background.png android/app/src/main/res/mipmap-hdpi/ic_launcher_background.png
+        cp android/app/src/main/res/mipmap-mdpi/ic_launcher_background.png android/app/src/main/res/mipmap-xhdpi/ic_launcher_background.png
+        cp android/app/src/main/res/mipmap-mdpi/ic_launcher_background.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher_background.png
+        cp android/app/src/main/res/mipmap-mdpi/ic_launcher_background.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_background.png
+        
+        # Create simple white foreground PNG files (will show as "B" when combined)
+        echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGBc/2qDgAAAABJRU5ErkJggg==" | base64 -d > android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png
+        cp android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png  
+        cp android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png
+        cp android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png
+        cp android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
+        
+        # Create adaptive icon XML files
+        cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml << 'EOF'
+        <?xml version="1.0" encoding="utf-8"?>
+        <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+            <background android:drawable="@mipmap/ic_launcher_background"/>
+            <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+        </adaptive-icon>
+        EOF
+        
+        cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml << 'EOF'
+        <?xml version="1.0" encoding="utf-8"?>
+        <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+            <background android:drawable="@mipmap/ic_launcher_background"/>
+            <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+        </adaptive-icon>
         EOF
         
         # Create launcher background drawable
