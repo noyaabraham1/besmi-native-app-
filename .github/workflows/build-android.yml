@@ -1,35 +1,26 @@
 name: Build Besmi Android APK - Theme Colors Enhanced
-
 on:
   workflow_dispatch:
-    inputs:
-      build_type:
-        description: 'Build Type'
-        required: true
-        default: 'debug'
-        type: choice
-        options:
-          - debug
-          - release
 
 jobs:
   build-android:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout Repository
+    - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Setup Node.js 20
+    - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
+        # Removed cache configuration to handle dynamic package.json creation
         
-    - name: Setup Java 17
+    - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
-        distribution: 'temurin'
         java-version: '17'
+        distribution: 'temurin'
         
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
@@ -38,9 +29,14 @@ jobs:
       run: |
         cat > package.json << 'EOF'
         {
-          "name": "besmi-mobile-app",
+          "name": "besmi-mobile",
           "version": "1.0.0",
-          "description": "Besmi - Professional Lash Booking Platform",
+          "description": "Besmi Mobile App",
+          "main": "index.js",
+          "scripts": {
+            "build": "npm run sync && cd android && ./gradlew assembleDebug",
+            "sync": "npx cap sync android"
+          },
           "dependencies": {
             "@capacitor/android": "^6.1.0",
             "@capacitor/camera": "^6.0.0",
@@ -52,15 +48,15 @@ jobs:
             "@capacitor/share": "^6.0.0",
             "@capacitor/splash-screen": "^6.0.0",
             "@capacitor/status-bar": "^6.0.0",
-            "capacitor-native-biometric": "^5.0.0"
+            "capacitor-native-biometric": "^4.2.2"
           }
         }
         EOF
         
-    - name: Install Dependencies
+    - name: Install dependencies
       run: npm install
       
-    - name: Create Capacitor Configuration
+    - name: Create Capacitor config
       run: |
         cat > capacitor.config.ts << 'EOF'
         import { CapacitorConfig } from '@capacitor/cli';
@@ -70,17 +66,25 @@ jobs:
           appName: 'Besmi',
           webDir: 'dist',
           server: {
-            url: 'https://besmi.replit.app',
+            url: 'https://besmi.com',
             cleartext: true
+          },
+          android: {
+            allowMixedContent: true
           },
           plugins: {
             SplashScreen: {
               launchShowDuration: 2000,
-              backgroundColor: '#000000',
-              showSpinner: false
+              backgroundColor: "#000000",
+              androidScaleType: "CENTER_CROP",
+              splashFullScreen: true,
+              splashImmersive: true
             },
-            StatusBar: {
-              style: 'LIGHT'
+            PushNotifications: {
+              presentationOptions: ["badge", "sound", "alert"]
+            },
+            Camera: {
+              permissions: ["camera", "photos"]
             }
           }
         };
@@ -88,291 +92,174 @@ jobs:
         export default config;
         EOF
         
-    - name: Create Enhanced Mobile Loading Screen
+    - name: Create index.html
       run: |
         mkdir -p dist
         cat > dist/index.html << 'EOF'
         <!DOCTYPE html>
         <html lang="en">
         <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Besmi - Loading...</title>
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body {
-              background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
-              color: white; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-              display: flex; justify-content: center; align-items: center;
-              height: 100vh; text-align: center; overflow: hidden;
-            }
-            .container { position: relative; z-index: 10; max-width: 320px; }
-            .logo {
-              width: 120px; height: 120px; background: white; border-radius: 28px;
-              display: flex; align-items: center; justify-content: center;
-              margin: 0 auto 40px; font-size: 72px; font-weight: bold;
-              color: black; font-family: serif; 
-              animation: logoFloat 3s ease-in-out infinite;
-              box-shadow: 0 30px 60px rgba(255, 255, 255, 0.15);
-            }
-            .bg-elements {
-              position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-              background: radial-gradient(circle at 20% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
-                          radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
-              animation: bgRotate 20s linear infinite;
-            }
-            .title { font-size: 36px; margin: 0 0 15px 0; font-weight: 300; letter-spacing: 2px; }
-            .subtitle { color: rgba(255, 255, 255, 0.8); margin-bottom: 30px; font-size: 16px; }
-            .progress-container { margin: 30px 0; }
-            .progress-bar {
-              width: 240px; height: 6px; background: rgba(255, 255, 255, 0.1);
-              border-radius: 3px; margin: 0 auto; overflow: hidden;
-            }
-            .progress-fill {
-              height: 100%; background: linear-gradient(90deg, #ec4899, #8b5cf6, #06b6d4);
-              width: 0%; animation: loading 3s ease-out forwards;
-            }
-            .features {
-              font-size: 14px; color: rgba(255, 255, 255, 0.7);
-              line-height: 1.6; margin-top: 25px;
-            }
-            .feature-item {
-              display: flex; align-items: center; justify-content: center;
-              margin: 8px 0; opacity: 0; animation: fadeInUp 0.6s ease forwards;
-            }
-            .feature-item:nth-child(1) { animation-delay: 1s; }
-            .feature-item:nth-child(2) { animation-delay: 1.3s; }
-            .feature-item:nth-child(3) { animation-delay: 1.6s; }
-            .feature-icon { margin-right: 8px; font-size: 16px; }
-            @keyframes logoFloat { 
-              0%, 100% { transform: translateY(0px) scale(1); } 
-              50% { transform: translateY(-15px) scale(1.05); } 
-            }
-            @keyframes bgRotate { 
-              0% { transform: rotate(0deg); } 
-              100% { transform: rotate(360deg); } 
-            }
-            @keyframes loading {
-              0% { width: 0%; }
-              100% { width: 100%; }
-            }
-            @keyframes fadeInUp {
-              0% { opacity: 0; transform: translateY(20px); }
-              100% { opacity: 1; transform: translateY(0); }
-            }
-          </style>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Besmi</title>
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                    color: white;
+                }
+                .container {
+                    text-align: center;
+                    padding: 2rem;
+                    background: rgba(255, 255, 255, 0.1);
+                    backdrop-filter: blur(10px);
+                    border-radius: 20px;
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                    max-width: 400px;
+                    width: 90%;
+                }
+                .logo {
+                    width: 80px;
+                    height: 80px;
+                    background: #000;
+                    border-radius: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 1.5rem;
+                    font-size: 48px;
+                    font-weight: bold;
+                    color: white;
+                    font-family: serif;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                }
+                h1 {
+                    font-size: 2rem;
+                    margin-bottom: 1rem;
+                    font-weight: 600;
+                }
+                .loading {
+                    margin: 2rem 0;
+                }
+                .spinner {
+                    width: 40px;
+                    height: 40px;
+                    border: 4px solid rgba(255, 255, 255, 0.3);
+                    border-top: 4px solid white;
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                    margin: 0 auto;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                .status {
+                    margin-top: 1rem;
+                    font-size: 0.9rem;
+                    opacity: 0.9;
+                }
+            </style>
         </head>
         <body>
-          <div class="bg-elements"></div>
-          <div class="container">
-            <div class="logo">B</div>
-            <h1 class="title">BESMI</h1>
-            <p class="subtitle">Professional Lash Booking Platform</p>
-            <div class="progress-container">
-              <div class="progress-bar">
-                <div class="progress-fill"></div>
-              </div>
+            <div class="container">
+                <div class="logo">B</div>
+                <h1>Besmi</h1>
+                <p>Professional Lash Booking Platform</p>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div class="status">Connecting to platform...</div>
+                </div>
             </div>
-            <div class="features">
-              <div class="feature-item">
-                <span class="feature-icon">🎨</span>
-                <span>Theme Color Enhanced</span>
-              </div>
-              <div class="feature-item">
-                <span class="feature-icon">🔐</span>
-                <span>Google OAuth Ready</span>
-              </div>
-              <div class="feature-item">
-                <span class="feature-icon">📱</span>
-                <span>Native Mobile Features</span>
-              </div>
-            </div>
-          </div>
-          <script>
-            setTimeout(() => {
-              window.location.href = 'https://besmi.replit.app';
-            }, 3500);
-          </script>
+            
+            <script>
+                setTimeout(() => {
+                    window.location.href = 'https://besmi.com';
+                }, 3000);
+            </script>
         </body>
         </html>
         EOF
         
-    - name: Initialize Capacitor Project
-      run: npx cap init "Besmi" "com.besmi.lashbooking" --web-dir=dist
-        
-    - name: Add Android Platform
-      run: npx cap add android
-      
-    - name: Create Enhanced Besmi Logo Icons
+    - name: Initialize Capacitor Android
       run: |
-        # Background (Pure Black)
-        mkdir -p android/app/src/main/res/drawable
-        cat > android/app/src/main/res/drawable/ic_launcher_background.xml << 'EOF'
-        <?xml version="1.0" encoding="utf-8"?>
-        <vector xmlns:android="http://schemas.android.com/apk/res/android"
-            android:width="108dp" android:height="108dp"
-            android:viewportWidth="108" android:viewportHeight="108">
-            <path android:fillColor="#000000" android:pathData="M0,0h108v108h-108z"/>
-        </vector>
-        EOF
+        npx cap add android
         
-        # Foreground (Professional White "B")
-        mkdir -p android/app/src/main/res/drawable-v24
-        cat > android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml << 'EOF'
-        <?xml version="1.0" encoding="utf-8"?>
-        <vector xmlns:android="http://schemas.android.com/apk/res/android"
-            android:width="108dp" android:height="108dp"
-            android:viewportWidth="108" android:viewportHeight="108">
-            <path android:fillColor="#FFFFFF"
-                  android:pathData="M28,20L28,88L54,88Q64,88 70,82Q76,76 76,67Q76,59 71,54Q76,49 76,40Q76,31 70,25Q64,19 54,19L28,20Z
-                                   M38,32L52,32Q57,32 60,35Q63,38 63,42Q63,46 60,49Q57,52 52,52L38,52L38,32Z
-                                   M38,63L53,63Q58,63 61.5,66Q65,69 65,74Q65,79 61.5,82Q58,85 53,85L38,85L38,63Z" />
-        </vector>
-        EOF
-        
-        # Adaptive icon configurations
-        mkdir -p android/app/src/main/res/mipmap-anydpi-v26
-        cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml << 'EOF'
-        <?xml version="1.0" encoding="utf-8"?>
-        <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-            <background android:drawable="@drawable/ic_launcher_background" />
-            <foreground android:drawable="@drawable/ic_launcher_foreground" />
-        </adaptive-icon>
-        EOF
-        
-        cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml << 'EOF'
-        <?xml version="1.0" encoding="utf-8"?>
-        <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-            <background android:drawable="@drawable/ic_launcher_background" />
-            <foreground android:drawable="@drawable/ic_launcher_foreground" />
-        </adaptive-icon>
-        EOF
-        
-    - name: Configure Complete Mobile App
+    - name: Update Android app name and icons
       run: |
-        # App strings
+        # Update app name
+        sed -i 's/android:label=".*"/android:label="Besmi"/' android/app/src/main/AndroidManifest.xml
+        
+        # Create launcher background (black)
         mkdir -p android/app/src/main/res/values
-        cat > android/app/src/main/res/values/strings.xml << 'EOF'
+        cat > android/app/src/main/res/values/colors.xml << 'EOF'
         <?xml version="1.0" encoding="utf-8"?>
         <resources>
-            <string name="app_name">Besmi</string>
-            <string name="title_activity_main">Besmi</string>
-            <string name="package_name">com.besmi.lashbooking</string>
-            <string name="custom_url_scheme">besmi</string>
+            <color name="ic_launcher_background">#000000</color>
+            <color name="colorPrimary">#000000</color>
+            <color name="colorPrimaryDark">#000000</color>
+            <color name="statusBarColor">#000000</color>
         </resources>
         EOF
         
-        # Enhanced AndroidManifest with all features
-        cat > android/app/src/main/AndroidManifest.xml << 'EOF'
-        <?xml version="1.0" encoding="utf-8"?>
-        <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.besmi.lashbooking">
-            
-            <!-- Essential Permissions -->
-            <uses-permission android:name="android.permission.INTERNET" />
-            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-            
-            <!-- Biometric Authentication -->
-            <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-            <uses-permission android:name="android.permission.USE_FINGERPRINT" />
-            
-            <!-- Camera and Storage -->
-            <uses-permission android:name="android.permission.CAMERA" />
-            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-            
-            <!-- Device Features -->
-            <uses-permission android:name="android.permission.VIBRATE" />
-            <uses-permission android:name="android.permission.WAKE_LOCK" />
-            
-            <!-- Push Notifications -->
-            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-            <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-            
-            <!-- Feature Requirements -->
-            <uses-feature android:name="android.hardware.camera" android:required="false" />
-            <uses-feature android:name="android.hardware.fingerprint" android:required="false" />
-            
-            <application 
-                android:allowBackup="true" 
-                android:icon="@mipmap/ic_launcher"
-                android:label="@string/app_name" 
-                android:roundIcon="@mipmap/ic_launcher_round"
-                android:theme="@style/AppTheme.NoActionBarLaunch" 
-                android:usesCleartextTraffic="true"
-                android:requestLegacyExternalStorage="true"
-                android:hardwareAccelerated="true">
-                
-                <activity 
-                    android:name=".MainActivity" 
-                    android:exported="true"
-                    android:theme="@style/AppTheme.NoActionBarLaunch"
-                    android:screenOrientation="portrait"
-                    android:launchMode="singleTask"
-                    android:windowSoftInputMode="adjustResize">
-                    
-                    <intent-filter>
-                        <action android:name="android.intent.action.MAIN" />
-                        <category android:name="android.intent.category.LAUNCHER" />
-                    </intent-filter>
-                    
-                    <!-- Deep linking support -->
-                    <intent-filter android:autoVerify="true">
-                        <action android:name="android.intent.action.VIEW" />
-                        <category android:name="android.intent.category.DEFAULT" />
-                        <category android:name="android.intent.category.BROWSABLE" />
-                        <data android:scheme="besmi" />
-                    </intent-filter>
-                </activity>
-                
-                <!-- Firebase Messaging Service -->
-                <service 
-                    android:name="io.capacitor.plugin.pushnotifications.MessagingService"
-                    android:exported="false">
-                    <intent-filter>
-                        <action android:name="com.google.firebase.MESSAGING_EVENT" />
-                    </intent-filter>
-                </service>
-                
-            </application>
-        </manifest>
+        # Create launcher foreground (white B)
+        mkdir -p android/app/src/main/res/drawable
+        cat > android/app/src/main/res/drawable/ic_launcher_foreground.xml << 'EOF'
+        <vector xmlns:android="http://schemas.android.com/apk/res/android"
+            android:width="108dp"
+            android:height="108dp"
+            android:viewportWidth="108"
+            android:viewportHeight="108">
+            <group android:scaleX="0.8"
+                android:scaleY="0.8"
+                android:pivotX="54"
+                android:pivotY="54">
+                <text
+                    android:fontFamily="serif"
+                    android:text="B"
+                    android:textSize="48sp"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:x="32"
+                    android:y="70" />
+            </group>
+        </vector>
         EOF
         
-    - name: Sync Capacitor with Enhanced Configuration
+        # Create launcher background drawable
+        cat > android/app/src/main/res/drawable/ic_launcher_background.xml << 'EOF'
+        <?xml version="1.0" encoding="utf-8"?>
+        <vector xmlns:android="http://schemas.android.com/apk/res/android"
+            android:width="108dp"
+            android:height="108dp"
+            android:viewportWidth="108"
+            android:viewportHeight="108">
+            <path android:fillColor="#000000"
+                android:pathData="M0,0h108v108h-108z"/>
+        </vector>
+        EOF
+        
+    - name: Sync Capacitor
       run: npx cap sync android
       
-    - name: Build Enhanced APK
+    - name: Make gradlew executable
+      run: chmod +x android/gradlew
+      
+    - name: Build Android APK
       run: |
         cd android
-        chmod +x gradlew
-        ./gradlew assembleDebug --stacktrace --info
+        ./gradlew assembleDebug
         
-    - name: Upload Besmi APK with Theme Colors
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: besmi-android-apk-theme-colors-enhanced
         path: android/app/build/outputs/apk/debug/app-debug.apk
         retention-days: 30
-        
-    - name: Enhanced Build Summary
-      run: |
-        echo "🚀 Besmi Mobile App with Theme Colors - BUILD COMPLETE!"
-        echo ""
-        echo "✅ New Features in This Build:"
-        echo "   • Pink-to-purple gradient tab selection"
-        echo "   • Purple-to-blue gradient action buttons"
-        echo "   • Google OAuth with authentic brand colors"
-        echo "   • Enhanced loading screen with theme colors"
-        echo "   • All form fields properly visible (white backgrounds)"
-        echo ""
-        echo "✅ Existing Features Maintained:"
-        echo "   • Correct Besmi 'B' logo (white on black)"
-        echo "   • Biometric authentication ready"
-        echo "   • Native mobile capabilities"
-        echo "   • Connects to: https://besmi.replit.app"
-        echo ""
-        echo "📱 APK Details:"
-        echo "   • Enhanced with latest theme color improvements"
-        echo "   • Size: ~15-20 MB"
-        echo "   • Target: Android 5.0+ (API 21+)"
-        echo ""
-        echo "📥 Download: 'besmi-android-apk-theme-colors-enhanced' from Artifacts"
