@@ -43,8 +43,14 @@ jobs:
     - name: Add Android Platform
       run: npx cap add android
     
-    - name: Copy Web Assets
-      run: npx cap copy android
+    - name: Setup Android Icons and Copy Assets
+      run: |
+        mkdir -p android/app/src/main/res/drawable
+        mkdir -p android/app/src/main/res/values
+        cp android-icons/ic_launcher_background.xml android/app/src/main/res/drawable/
+        cp android-icons/ic_launcher_foreground.xml android/app/src/main/res/drawable/
+        cp android-icons/colors.xml android/app/src/main/res/values/
+        npx cap copy android
     
     - name: Sync Capacitor
       run: npx cap sync android
