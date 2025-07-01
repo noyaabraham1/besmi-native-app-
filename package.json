@@ -1,0 +1,32 @@
+### 1. package.json (Root Level)
+
+```json
+{
+  "name": "besmi-mobile-app",
+  "version": "1.0.0",
+  "description": "Besmi - The only system built for lash artists of any level",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'Build complete'",
+    "start": "echo 'Starting app'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.0",
+    "@capacitor/camera": "^6.0.0",
+    "@capacitor/cli": "^6.1.0",
+    "@capacitor/core": "^6.1.0",
+    "@capacitor/haptics": "^6.0.0",
+    "@capacitor/keyboard": "^6.0.0",
+    "@capacitor/push-notifications": "^6.0.0",
+    "@capacitor/share": "^6.0.0",
+    "@capacitor/splash-screen": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "keywords": ["mobile", "lash", "booking", "beauty", "capacitor"],
+  "author": "Besmi",
+  "license": "MIT"
+}
+```
